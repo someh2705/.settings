@@ -3,7 +3,6 @@
 {
   imports = [
     ./programs/git.nix
-    ./programs/direnv.nix
 
     # shell
     ./programs/nushell/nushell.nix

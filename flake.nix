@@ -21,7 +21,6 @@
   };
 
   outputs = { 
-    self,
     nixpkgs,
     nixos-wsl,
     home-manager,
@@ -33,6 +32,7 @@
       system = "x86_64-linux";
       modules = [
         (import ./system)
+        (import ./develop)
 
         (import ./system/wsl.nix)
         nixos-wsl.nixosModules.wsl

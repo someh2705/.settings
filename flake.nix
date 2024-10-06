@@ -20,38 +20,39 @@
     vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
-  outputs = { 
-    nixpkgs,
-    nixos-wsl,
-    home-manager,
-    vscode-server,
-    nixd,
-    ...
-  }: {
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        (import ./system)
-        (import ./develop)
+  outputs =
+    {
+      nixpkgs,
+      nixos-wsl,
+      home-manager,
+      vscode-server,
+      nixd,
+      ...
+    }:
+    {
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          (import ./system)
+          (import ./develop)
 
-        (import ./system/wsl.nix)
-        nixos-wsl.nixosModules.wsl
-        
-        (import ./system/vscode.nix)
-        vscode-server.nixosModules.default
+          (import ./system/wsl.nix)
+          nixos-wsl.nixosModules.wsl
 
-        home-manager.nixosModules.home-manager {
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            users.nixos = (import ./home);
-          };
-        }
+          (import ./system/vscode.nix)
+          vscode-server.nixosModules.default
 
-        {
-          nixpkgs.overlays = [ nixd.overlays.default ];
-        }
-      ];
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users.nixos = (import ./home);
+            };
+          }
+
+          { nixpkgs.overlays = [ nixd.overlays.default ]; }
+        ];
+      };
     };
-  };
 }

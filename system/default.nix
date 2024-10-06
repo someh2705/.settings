@@ -5,7 +5,6 @@
   environment.systemPackages = [
     pkgs.wget
     pkgs.lazygit
-    pkgs.nixd
   ];
   nix.extraOptions = ''
     experimental-features = nix-command flakes

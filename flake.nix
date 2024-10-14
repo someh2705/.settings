@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL";
@@ -13,6 +13,11 @@
     nixd.url = "github:nix-community/nixd";
 
     home-manager = {
+      url = "github:nix-community/home-manager/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    home-manager-stable = {
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -20,39 +25,55 @@
     vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
-  outputs =
-    {
-      nixpkgs,
-      nixos-wsl,
-      home-manager,
-      vscode-server,
-      nixd,
-      ...
-    }:
-    {
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+  outputs = inputs@{ self, ... }:
+    let 
+      systemSettings = {
         system = "x86_64-linux";
-        modules = [
-          (import ./system)
-          (import ./develop)
-
-          (import ./system/wsl.nix)
-          nixos-wsl.nixosModules.wsl
-
-          (import ./system/vscode.nix)
-          vscode-server.nixosModules.default
-
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.nixos = (import ./home);
-            };
-          }
-
-          { nixpkgs.overlays = [ nixd.overlays.default ]; }
-        ];
       };
+
+      userSettings = {
+        profile = "someh";
+      };
+
+      pkgs = import inputs.nixpkgs {
+        system = systemSettings.system;
+        overlays = [ inputs.nix.overlays.default ];
+      };
+
+      lib = inputs.nixpkgs.lib;
+      
+      home-manager = inputs.home-manager;
+
+      supportedSystems = [ "x86_64-linux" ];
+
+      forAllSystems = inputs.nixpkgs.lib.genAttrs supportedSystems;
+    in {
+      homeConfigurations = {
+        user = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ (import ./home) ];
+          specialArgs = {
+            inherit userSettings;
+          };
+        };
+      };
+
+      nixosConfigurations = {
+        system = lib.nixosSystem {
+          system = systemSettings.system;
+          modules = [ (import ./system) ];
+          specialArgs = {
+            inherit userSettings;
+          };
+        };
+      };
+
+      packages = forAllSystems (system: {
+        default = self.packages.${system}.install;
+      });
+
+      app = forAllSystems (system: {
+        default = self.apps.${system}.install;
+      });
     };
 }

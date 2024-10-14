@@ -28,18 +28,19 @@
       vscode-server,
       nixd,
       ...
-    }:
-    {
+    }: 
+    let
+      system = "x86_64-linux";
+      pkgs = (import nixpkgs {
+        inherit system;
+      });
+    in {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          (import ./system)
-          (import ./develop)
+          (import ./profile/nixos/configuration.nix)
 
-          (import ./system/wsl.nix)
-          nixos-wsl.nixosModules.wsl
-
-          (import ./system/vscode.nix)
+          nixos-wsl.nixosModules.default
           vscode-server.nixosModules.default
 
           home-manager.nixosModules.home-manager
@@ -47,7 +48,7 @@
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-              users.nixos = (import ./home);
+              users.nixos = (import ./profile/nixos/home.nix);
             };
           }
 

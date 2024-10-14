@@ -2,10 +2,8 @@
 
 {
   imports = [
-    ./programs/git.nix
-
-    # shell
-    ./programs/nushell/nushell.nix
+    ../../programs/nushell/nushell.nix
+    ../../programs/git.nix
   ];
 
   home = {

@@ -3,6 +3,7 @@
 {
   imports = [
     ../../programs/nushell/nushell.nix
+    ../../programs/starship/starship.nix
     ../../programs/git.nix
   ];
 

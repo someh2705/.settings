@@ -1,0 +1,12 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+[username]
+show_always = true
+format = '[@$user]($style) in '
+
+[directory]
+truncation_length = 1
+
+[character]
+success_symbol = "[󰘧](bold green)"
+error_symbol = "[󰘧](bold red)"

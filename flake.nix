@@ -1,6 +1,36 @@
 {
   description = "A wsl settings with vscode";
 
+  outputs = input@{ self, nixpkgs, nixos-wsl, home-manager, vscode-server, nixd, ... }:
+    let
+      system = "x86_64-linux";
+      profile = "nixos";
+      pkgs = (import nixpkgs {
+        inherit system;
+      });
+    in {
+      nixosConfigurations."${profile}" = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          (./. + "/profile" + ("/" + profile) + "/configuration.nix")
+
+          nixos-wsl.nixosModules.default
+          vscode-server.nixosModules.default
+          home-manager.nixosModules.default
+
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              users."${profile}" = (./. + "/profile" + ("/" + profile) + "/home.nix");
+            };
+          }
+
+          { nixpkgs.overlays = [ nixd.overlays.default ]; }
+        ];
+      };
+    };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -19,41 +49,4 @@
 
     vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
-
-  outputs =
-    {
-      nixpkgs,
-      nixos-wsl,
-      home-manager,
-      vscode-server,
-      nixd,
-      ...
-    }: 
-    let
-      system = "x86_64-linux";
-      pkgs = (import nixpkgs {
-        inherit system;
-      });
-    in {
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          (import ./profile/nixos/configuration.nix)
-
-          nixos-wsl.nixosModules.default
-          vscode-server.nixosModules.default
-
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              users.nixos = (import ./profile/nixos/home.nix);
-            };
-          }
-
-          { nixpkgs.overlays = [ nixd.overlays.default ]; }
-        ];
-      };
-    };
 }

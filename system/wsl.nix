@@ -1,12 +1,8 @@
-{ pkgs, nixos-wsl, userSettings, ... }:
+{ pkgs, ... }:
 
 {
-  imports = [
-    nixos-wsl.nixosModules.wsl
-  ];
-
   wsl.enable = true;
-  wsl.defaultUser = userSettings.profile;
+  wsl.defaultUser = "nixos";
   wsl.extraBin = with pkgs; [
     { src = "${coreutils}/bin/uname"; }
     { src = "${coreutils}/bin/dirname}"; }
